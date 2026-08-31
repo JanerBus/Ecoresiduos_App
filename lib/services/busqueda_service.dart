@@ -21,11 +21,31 @@ class BusquedaService {
         return data.map((json) => WasteItem.fromJson(json)).toList();
       }
       
-      // Búsqueda por nombre usando ilike (evitamos buscar en categoria por ser un tipo ENUM en Postgres)
-      final response = await supabase
-          .from('materiales_residuos')
-          .select()
-          .ilike('nombre_comun', '%$query%');
+      final queryClean = query.trim();
+      final categoriasValidas = ['PELIGROSO', 'INDUSTRIAL', 'RAEE', 'BIOSANITARIO'];
+      
+      // Verificamos si la búsqueda coincide exactamente con una categoría
+      final esCategoria = categoriasValidas.any(
+        (c) => c.toLowerCase() == queryClean.toLowerCase()
+      );
+
+      late final response;
+      if (esCategoria) {
+        final queryCat = categoriasValidas.firstWhere(
+          (c) => c.toLowerCase() == queryClean.toLowerCase()
+        );
+        // Si es una categoría, buscamos exactamente en la columna ENUM
+        response = await supabase
+            .from('materiales_residuos')
+            .select()
+            .eq('categoria', queryCat);
+      } else {
+        // Búsqueda por nombre_comun
+        response = await supabase
+            .from('materiales_residuos')
+            .select()
+            .ilike('nombre_comun', '%$queryClean%');
+      }
           
       final List<dynamic> data = response;
       return data.map((json) => WasteItem.fromJson(json)).toList();

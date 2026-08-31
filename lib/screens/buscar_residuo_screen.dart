@@ -19,7 +19,7 @@ class BuscarResiduoScreen extends StatefulWidget {
 class _BuscarResiduoScreenState extends State<BuscarResiduoScreen> {
   final _controller = TextEditingController();
   late final BusquedaService _service = widget.service ?? BusquedaService();
-  static const _categorias = ['Reciclable', 'Orgánico', 'Peligroso'];
+  static const _categorias = ['PELIGROSO', 'INDUSTRIAL', 'RAEE', 'BIOSANITARIO'];
 
   void _buscar(String query) {
     if (query.trim().isEmpty) return;
