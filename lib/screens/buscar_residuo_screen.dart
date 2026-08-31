@@ -19,7 +19,14 @@ class BuscarResiduoScreen extends StatefulWidget {
 class _BuscarResiduoScreenState extends State<BuscarResiduoScreen> {
   final _controller = TextEditingController();
   late final BusquedaService _service = widget.service ?? BusquedaService();
-  static const _categorias = ['PELIGROSO', 'INDUSTRIAL', 'RAEE', 'BIOSANITARIO'];
+
+  // Mapeo de etiqueta visual a valor exacto en la BD
+  static const _categorias = {
+    'Peligroso': 'PELIGROSO',
+    'Industrial': 'INDUSTRIAL',
+    'RAEE': 'RAEE',
+    'Biosanitario': 'BIOSANITARIO',
+  };
 
   void _buscar(String query) {
     if (query.trim().isEmpty) return;
@@ -75,17 +82,20 @@ class _BuscarResiduoScreenState extends State<BuscarResiduoScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      for (final categoria in _categorias) ...[
-                        CategoriaChip(
-                          label: categoria,
-                          selected: false,
-                          onTap: () => _buscar(categoria),
-                        ),
-                        const SizedBox(width: 12),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (final entry in _categorias.entries) ...[
+                          CategoriaChip(
+                            label: entry.key,
+                            selected: false,
+                            onTap: () => _buscar(entry.value),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 24),
                   const Text(

@@ -19,25 +19,40 @@ class GuiaManejoGeneralScreen extends StatefulWidget {
 
 class _GuiaManejoGeneralScreenState extends State<GuiaManejoGeneralScreen> {
   static const _pasosPorCategoria = {
-    'Reciclable': [
-      'Enjuaga el envase y retira etiquetas.',
-      'Aplasta el envase para reducir volumen.',
-      'Deposita en el contenedor de reciclables.',
-      'Lleva a un gestor certificado si es en volumen.',
-    ],
-    'Orgánico': [
-      'Separa los residuos de comida de otros materiales.',
-      'Deposita en un recipiente con tapa para evitar olores.',
-      'Lleva a un punto de compostaje si tu zona lo ofrece.',
-    ],
     'Peligroso': [
-      'No lo mezcles con residuos comunes.',
-      'Guárdalo en su empaque original si es posible.',
-      'Llévalo a un gestor certificado de residuos peligrosos.',
+      'No lo mezcles con residuos comunes o reciclables.',
+      'Guárdalo en su empaque original o uno hermético.',
+      'Etiqueta claramente el contenedor para evitar accidentes.',
+      'Entrégalo a un gestor certificado de residuos peligrosos.',
+    ],
+    'Industrial': [
+      'Separa y clasifica según la normativa de tu sector.',
+      'Almacena en áreas designadas y seguras lejos de sumideros.',
+      'Evita derrames y contaminación cruzada.',
+      'Contacta a un gestor autorizado para la recolección en volumen.',
+    ],
+    'RAEE': [
+      'No desarmes los equipos electrónicos por tu cuenta.',
+      'Cubre con cinta las baterías o cables expuestos.',
+      'Llévalos a puntos de recolección autorizados (ej. centros comerciales).',
+      'Borra tu información personal antes de desecharlos.',
+    ],
+    'Biosanitario': [
+      'Usa elementos de protección personal al manipularlos.',
+      'Deposítalos únicamente en bolsas rojas marcadas como Riesgo Biológico.',
+      'No los comprimas ni los mezcles con ningún otro tipo de residuo.',
+      'Requieren recolección especializada y desactivación por calor.',
     ],
   };
 
-  String _categoria = 'Reciclable';
+  static const _descripciones = {
+    'Peligroso': 'Sustancias químicas, aceites, pinturas o materiales corrosivos que representan un riesgo para la salud o el medio ambiente.',
+    'Industrial': 'Residuos generados en procesos de manufactura, construcción o minería.',
+    'RAEE': 'Residuos de Aparatos Eléctricos y Electrónicos (cables, celulares, electrodomésticos).',
+    'Biosanitario': 'Material que ha estado en contacto con fluidos corporales humanos o animales, con riesgo de infección.',
+  };
+
+  String _categoria = 'Peligroso';
 
   @override
   Widget build(BuildContext context) {
@@ -46,27 +61,70 @@ class _GuiaManejoGeneralScreenState extends State<GuiaManejoGeneralScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _Header(title: 'Guía de manejo'),
+            _Header(title: 'Guía de manejo general'),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: Row(
-                children: [
-                  for (final categoria in _pasosPorCategoria.keys) ...[
-                    CategoriaChip(
-                      label: categoria,
-                      selected: categoria == _categoria,
-                      onTap: () => setState(() => _categoria = categoria),
-                    ),
-                    const SizedBox(width: 12),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final categoria in _pasosPorCategoria.keys) ...[
+                      CategoriaChip(
+                        label: categoria,
+                        selected: categoria == _categoria,
+                        onTap: () => setState(() => _categoria = categoria),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                child: PasosManejoList(
-                  pasos: _pasosPorCategoria[_categoria]!,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: EcoColors.primaryContainer.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: EcoColors.primaryContainer),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.info_outline_rounded, color: EcoColors.primary),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _descripciones[_categoria]!,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                height: 1.5,
+                                color: EcoColors.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Pasos recomendados',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: EcoColors.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    PasosManejoList(
+                      pasos: _pasosPorCategoria[_categoria]!,
+                    ),
+                  ],
                 ),
               ),
             ),
