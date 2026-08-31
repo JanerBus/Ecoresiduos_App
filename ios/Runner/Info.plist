@@ -6,6 +6,8 @@
 	<string>Esta aplicación necesita acceso a la cámara para identificar residuos.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Esta aplicación necesita acceso al micrófono para grabar videos.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Esta aplicación necesita tu ubicación para encontrar gestores de residuos cercanos a ti.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/autoridad_ambiental.dart';
 import '../models/gestor.dart';
@@ -8,13 +10,58 @@ class DirectorioService {
   Future<List<Gestor>> gestores() async {
     try {
       final supabase = Supabase.instance.client;
-      // Consultamos a perfiles_gestor
       final response = await supabase.from('perfiles_gestor').select();
       final List<dynamic> data = response;
       if (data.isEmpty) {
         throw Exception('Lista vacía');
       }
-      return data.map((json) => Gestor.fromJson(json)).toList();
+
+      // Obtener ubicación del usuario de forma segura
+      Position? userPos;
+      try {
+        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (serviceEnabled) {
+          LocationPermission permission = await Geolocator.checkPermission();
+          if (permission == LocationPermission.denied) {
+            permission = await Geolocator.requestPermission();
+          }
+          if (permission == LocationPermission.whileInUse || 
+              permission == LocationPermission.always) {
+            userPos = await Geolocator.getCurrentPosition(
+              desiredAccuracy: LocationAccuracy.high,
+              timeLimit: const Duration(seconds: 5),
+            );
+          }
+        }
+      } catch (e) {
+        debugPrint('Error obteniendo GPS: $e');
+      }
+
+      final gestores = data.map((json) {
+        double distancia = 0.0;
+        final double? gestorLat = json['latitud'] != null ? double.tryParse(json['latitud'].toString()) : null;
+        final double? gestorLon = json['longitud'] != null ? double.tryParse(json['longitud'].toString()) : null;
+
+        if (userPos != null && gestorLat != null && gestorLon != null) {
+          final distanceMeters = Geolocator.distanceBetween(
+            userPos.latitude, userPos.longitude, gestorLat, gestorLon);
+          distancia = double.parse((distanceMeters / 1000).toStringAsFixed(1));
+        }
+
+        return Gestor(
+          nombre: json['razon_social']?.toString() ?? '',
+          categoria: json['municipio']?.toString() ?? 'Gestor Autorizado', 
+          distanciaKm: distancia,
+          direccion: json['direccion']?.toString() ?? '',
+          telefono: json['telefono_contacto']?.toString() ?? '',
+          correo: json['email_contacto']?.toString() ?? '',
+          horario: json['estado_verificacion'] == 'verificado' ? 'Verificado' : 'Pendiente',
+        );
+      }).toList();
+
+      // Ordenar por distancia de menor a mayor
+      gestores.sort((a, b) => a.distanciaKm.compareTo(b.distanciaKm));
+      return gestores;
     } catch (e) {
       // Fallback temporal si la tabla no existe o Supabase falla
       return const [
