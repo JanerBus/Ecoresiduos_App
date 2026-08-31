@@ -56,6 +56,8 @@ class DirectorioService {
           telefono: json['telefono_contacto']?.toString() ?? '',
           correo: json['email_contacto']?.toString() ?? '',
           horario: json['estado_verificacion'] == 'verificado' ? 'Verificado' : 'Pendiente',
+          latitud: gestorLat,
+          longitud: gestorLon,
         );
       }).toList();
 

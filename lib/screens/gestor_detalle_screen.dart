@@ -26,7 +26,8 @@ class GestorDetalleScreen extends StatelessWidget {
       telefono: gestor.telefono,
       correo: gestor.correo,
       horario: gestor.horario,
-      // TODO: usar url_launcher para tel:/geo: cuando se integre.
+      latitud: gestor.latitud,
+      longitud: gestor.longitud,
       onLlamar: onLlamar,
       onComoLlegar: onComoLlegar,
     );

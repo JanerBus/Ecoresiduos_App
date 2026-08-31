@@ -8,6 +8,8 @@ class Gestor {
     required this.telefono,
     required this.correo,
     required this.horario,
+    this.latitud,
+    this.longitud,
   });
 
   factory Gestor.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,8 @@ class Gestor {
       telefono: json['telefono_contacto']?.toString() ?? '',
       correo: json['email_contacto']?.toString() ?? '',
       horario: json['estado_verificacion'] == 'verificado' ? 'Verificado' : 'Pendiente',
+      latitud: json['latitud'] != null ? double.tryParse(json['latitud'].toString()) : null,
+      longitud: json['longitud'] != null ? double.tryParse(json['longitud'].toString()) : null,
     );
   }
 
@@ -32,4 +36,6 @@ class Gestor {
   final String telefono;
   final String correo;
   final String horario;
+  final double? latitud;
+  final double? longitud;
 }

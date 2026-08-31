@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../theme/eco_colors.dart';
 
@@ -16,6 +19,8 @@ class ContactoDetalleScreen extends StatelessWidget {
     required this.telefono,
     required this.correo,
     required this.horario,
+    this.latitud,
+    this.longitud,
     this.onLlamar,
     this.onComoLlegar,
   });
@@ -27,8 +32,42 @@ class ContactoDetalleScreen extends StatelessWidget {
   final String telefono;
   final String correo;
   final String horario;
+  final double? latitud;
+  final double? longitud;
   final VoidCallback? onLlamar;
   final VoidCallback? onComoLlegar;
+
+  Future<void> _abrirMapa(BuildContext context) async {
+    if (latitud != null && longitud != null) {
+      final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$latitud,$longitud');
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No se pudo abrir el mapa.')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _llamar(BuildContext context) async {
+    if (telefono.isNotEmpty) {
+      // Limpiar el teléfono para que solo queden números y el signo +
+      final phone = telefono.replaceAll(RegExp(r'[^\d+]'), '');
+      final url = Uri.parse('tel:$phone');
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url);
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No se pudo abrir la aplicación de llamadas.')),
+          );
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +134,46 @@ class ContactoDetalleScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
+                  if (latitud != null && longitud != null) ...[
+                    Container(
+                      height: 150,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: EcoColors.outline, width: 1.4),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: FlutterMap(
+                        options: MapOptions(
+                          initialCenter: LatLng(latitud!, longitud!),
+                          initialZoom: 15.0,
+                          interactionOptions: const InteractionOptions(
+                            flags: InteractiveFlag.none, // Hacer el mapa estático
+                          ),
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: 'com.example.ecoresiduos',
+                          ),
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: LatLng(latitud!, longitud!),
+                                width: 40,
+                                height: 40,
+                                child: const Icon(
+                                  Icons.location_on,
+                                  color: Colors.red,
+                                  size: 40,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   _InfoRow(
                     icon: Icons.location_on_rounded,
                     label: 'Dirección',
@@ -125,7 +204,7 @@ class ContactoDetalleScreen extends StatelessWidget {
                         child: SizedBox(
                           height: 44,
                           child: FilledButton(
-                            onPressed: onLlamar,
+                            onPressed: onLlamar ?? () => _llamar(context),
                             style: FilledButton.styleFrom(
                               backgroundColor: EcoColors.primary,
                               foregroundColor: EcoColors.onPrimary,
@@ -148,7 +227,7 @@ class ContactoDetalleScreen extends StatelessWidget {
                         child: SizedBox(
                           height: 44,
                           child: OutlinedButton(
-                            onPressed: onComoLlegar,
+                            onPressed: onComoLlegar ?? () => _abrirMapa(context),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: EcoColors.primary,
                               side: const BorderSide(
