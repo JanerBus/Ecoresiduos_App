@@ -30,11 +30,6 @@ class IdentificacionService {
         throw ErrorProcesamientoException();
       }
 
-      final model = GenerativeModel(
-        model: 'gemini-flash-latest',
-        apiKey: apiKey,
-      );
-
       final imageFile = File(imagePath);
       final imageBytes = await imageFile.readAsBytes();
 
@@ -62,20 +57,41 @@ class IdentificacionService {
         ])
       ];
 
+      final modelosParaIntentar = [
+        'gemini-3.5-flash',
+        'gemini-2.5-flash',
+        'gemini-2.5-pro',
+        'gemini-flash-latest'
+      ];
+
       GenerateContentResponse? response;
-      try {
-        response = await model.generateContent(content);
-      } catch (e) {
-        if (e.toString().contains('is not found') || e.toString().contains('not supported')) {
-          // Fallback a modelo anterior o más reciente
-          final fallbackModel = GenerativeModel(
-            model: 'gemini-2.5-flash',
+      String? ultimoError;
+
+      for (String nombreModelo in modelosParaIntentar) {
+        try {
+          final model = GenerativeModel(
+            model: nombreModelo,
             apiKey: apiKey,
           );
-          response = await fallbackModel.generateContent(content);
-        } else {
+          response = await model.generateContent(content);
+          break; // Si funcionó, salimos del bucle con el response
+        } catch (e) {
+          ultimoError = e.toString();
+          // Solo continuamos si es un 503 (alta demanda), 404 (no encontrado) o no soportado
+          if (ultimoError.contains('503') ||
+              ultimoError.contains('high demand') ||
+              ultimoError.contains('not found') ||
+              ultimoError.contains('not supported') ||
+              ultimoError.contains('429')) {
+            continue;
+          }
+          // Si es otro tipo de error (red caída, json malformado), tiramos la excepción normal
           rethrow;
         }
+      }
+
+      if (response == null) {
+        throw ErrorProcesamientoException(ultimoError ?? 'Los servidores de Google están demasiado saturados en este momento.');
       }
 
       final responseText = response.text;
