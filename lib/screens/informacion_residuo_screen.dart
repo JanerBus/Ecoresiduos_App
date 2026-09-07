@@ -16,8 +16,35 @@ class InformacionResiduoScreen extends StatelessWidget {
   final WasteItem item;
   final VoidCallback? onVerManejo;
 
+  Color _obtenerColorCategoria(String categoria) {
+    final cat = categoria.toUpperCase();
+    if (cat.contains('PELIGROSO') || cat.contains('BIOSANITARIO')) return Colors.red.shade700;
+    if (cat.contains('INDUSTRIAL') || cat.contains('RAEE')) return Colors.orange.shade700;
+    if (cat.contains('RECICLABLE') || cat.contains('ORGANICO')) return Colors.green.shade700;
+    if (cat.contains('ORDINARIO')) return Colors.grey.shade700;
+    return EcoColors.primary;
+  }
+
+  IconData _obtenerIconoCategoria(String categoria) {
+    final cat = categoria.toUpperCase();
+    if (cat.contains('PELIGROSO') || cat.contains('BIOSANITARIO')) return Icons.warning_rounded;
+    if (cat.contains('INDUSTRIAL')) return Icons.factory_rounded;
+    if (cat.contains('RAEE')) return Icons.memory_rounded;
+    if (cat.contains('RECICLABLE')) return Icons.recycling_rounded;
+    if (cat.contains('ORGANICO')) return Icons.compost_rounded;
+    return Icons.delete_outline_rounded;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final colorCategoria = _obtenerColorCategoria(item.categoria);
+    final iconoCategoria = _obtenerIconoCategoria(item.categoria);
+
+    // Ocultar características si solo dice "Código: N/A" o "Sin características"
+    final bool mostrarCaracteristicas = 
+        !item.caracteristicas.contains('N/A') && 
+        !item.caracteristicas.contains('Sin características');
+
     return Scaffold(
       backgroundColor: EcoColors.background,
       body: SafeArea(
@@ -26,88 +53,145 @@ class InformacionResiduoScreen extends StatelessWidget {
             _Header(title: item.nombre),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _FotoResiduo(imagenPath: item.imagenPath),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
+                    
+                    // Chip de Categoría Mejorado
                     Container(
-                      height: 32,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: EcoColors.background,
+                        color: colorCategoria.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(
-                          color: const Color(0xFF73796D),
-                          width: 1.4,
+                          color: colorCategoria.withOpacity(0.5),
+                          width: 1.5,
                         ),
                       ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(iconoCategoria, size: 18, color: colorCategoria),
+                          const SizedBox(width: 8),
+                          Text(
+                            item.etiquetaCategoria.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold,
+                              color: colorCategoria,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Sección Descripción
+                    const Row(
+                      children: [
+                        Icon(Icons.info_outline_rounded, color: EcoColors.primary, size: 22),
+                        SizedBox(width: 8),
+                        Text(
+                          'Descripción e Impacto',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: EcoColors.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                        border: Border.all(color: EcoColors.outlineVariant.withOpacity(0.5)),
+                      ),
                       child: Text(
-                        item.etiquetaCategoria,
+                        item.descripcion,
                         style: const TextStyle(
-                          fontSize: 14,
-                          letterSpacing: 0.4,
-                          fontWeight: FontWeight.w500,
+                          fontSize: 15,
+                          height: 1.6,
                           color: EcoColors.onSurfaceVariant,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Descripción',
-                      style: TextStyle(
-                        fontSize: 16,
-                        height: 24 / 16,
-                        fontWeight: FontWeight.w500,
-                        color: EcoColors.onSurface,
+                    
+                    // Sección Características (opcional)
+                    if (mostrarCaracteristicas) ...[
+                      const SizedBox(height: 24),
+                      const Row(
+                        children: [
+                          Icon(Icons.list_alt_rounded, color: EcoColors.primary, size: 22),
+                          SizedBox(width: 8),
+                          Text(
+                            'Detalles',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: EcoColors.onSurface,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      item.descripcion,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        height: 20 / 14,
-                        color: EcoColors.onSurfaceVariant,
+                      const SizedBox(height: 12),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: EcoColors.surfaceVariant.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: EcoColors.outlineVariant),
+                        ),
+                        child: Text(
+                          item.caracteristicas,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            height: 1.5,
+                            color: EcoColors.onSurfaceVariant,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Características',
-                      style: TextStyle(
-                        fontSize: 16,
-                        height: 24 / 16,
-                        fontWeight: FontWeight.w500,
-                        color: EcoColors.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      item.caracteristicas,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        height: 20 / 14,
-                        color: EcoColors.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
+                    ],
+
+                    const SizedBox(height: 32),
+                    
+                    // Botón de Manejo
                     SizedBox(
                       width: double.infinity,
-                      height: 44,
-                      child: FilledButton(
+                      height: 52,
+                      child: FilledButton.icon(
                         onPressed: onVerManejo,
+                        icon: const Icon(Icons.eco_rounded),
+                        label: const Text(
+                          'VER GUÍA DE MANEJO',
+                          style: TextStyle(
+                            fontSize: 15, 
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                         style: FilledButton.styleFrom(
                           backgroundColor: EcoColors.primary,
                           foregroundColor: EcoColors.onPrimary,
+                          elevation: 2,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(999),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                        ),
-                        child: const Text(
-                          'VER MANEJO RECOMENDADO',
-                          style: TextStyle(fontSize: 14, letterSpacing: 0.4),
                         ),
                       ),
                     ),
@@ -132,9 +216,15 @@ class _Header extends StatelessWidget {
     return Container(
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: EcoColors.background,
-        border: Border(bottom: BorderSide(color: EcoColors.outline)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -143,15 +233,19 @@ class _Header extends StatelessWidget {
             color: EcoColors.onSurface,
             onPressed: () => Navigator.maybePop(context),
           ),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 20,
-              height: 28 / 20,
-              fontWeight: FontWeight.bold,
-              color: EcoColors.onSurface,
+          Expanded(
+            child: Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: EcoColors.onSurface,
+              ),
             ),
           ),
+          const SizedBox(width: 48), // Balance visual con el back button
         ],
       ),
     );
@@ -165,27 +259,39 @@ class _FotoResiduo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: SizedBox(
-        height: 160,
-        width: double.infinity,
-        child: imagenPath != null
-            ? Image.file(File(imagenPath!), fit: BoxFit.cover)
-            : Container(
-                color: const Color(0xFFDFE4D7),
-                child: const Center(
-                  child: CircleAvatar(
-                    radius: 22,
-                    backgroundColor: Colors.white,
-                    child: Icon(
-                      Icons.photo_camera_rounded,
-                      color: EcoColors.onSurfaceVariant,
-                      size: 20,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: SizedBox(
+          height: 240, // Más alta para mayor impacto visual
+          width: double.infinity,
+          child: imagenPath != null
+              ? Image.file(File(imagenPath!), fit: BoxFit.cover)
+              : Container(
+                  color: const Color(0xFFDFE4D7),
+                  child: const Center(
+                    child: CircleAvatar(
+                      radius: 28,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.photo_camera_rounded,
+                        color: EcoColors.onSurfaceVariant,
+                        size: 24,
+                      ),
                     ),
                   ),
                 ),
-              ),
+        ),
       ),
     );
   }
