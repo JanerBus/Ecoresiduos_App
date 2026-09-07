@@ -8,7 +8,9 @@ class EcoColors {
   static const background = Color(0xFFFCFDF6);
   static const onSurface = Color(0xFF1A1C18);
   static const onSurfaceVariant = Color(0xFF43483E);
+  static const surfaceVariant = Color(0xFFDFE4D7);
   static const outline = Color(0xFFC3C8BB);
+  static const outlineVariant = Color(0xFF73796D);
 
   static const primary = Color(0xFF4A6B21);
   static const onPrimary = Colors.white;
