@@ -31,7 +31,7 @@ class IdentificacionService {
       }
 
       final model = GenerativeModel(
-        model: 'gemini-1.5-flash',
+        model: 'gemini-flash-latest',
         apiKey: apiKey,
       );
 
@@ -67,9 +67,9 @@ class IdentificacionService {
         response = await model.generateContent(content);
       } catch (e) {
         if (e.toString().contains('is not found') || e.toString().contains('not supported')) {
-          // Fallback a modelo anterior
+          // Fallback a modelo anterior o más reciente
           final fallbackModel = GenerativeModel(
-            model: 'gemini-pro-vision',
+            model: 'gemini-2.5-flash',
             apiKey: apiKey,
           );
           response = await fallbackModel.generateContent(content);
