@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import '../models/waste_item.dart';
 
 /// Se lanza cuando el análisis no logra reconocer el residuo con
@@ -12,33 +16,76 @@ class ErrorProcesamientoException implements Exception {}
 class SinConexionException implements Exception {}
 
 /// Punto único donde se resuelve "¿qué residuo es este?".
-///
-/// Hoy devuelve datos de prueba con un retraso simulado. Cuando se integre
-/// ML Kit, reemplaza el cuerpo de [identificar] por la inferencia real
-/// (image labeling + el mapeo de etiquetas a categorías en español) sin
-/// tener que tocar ninguna pantalla: todas dependen de esta interfaz.
 class IdentificacionService {
   Future<WasteItem> identificar({required String imagePath}) async {
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final apiKey = dotenv.env['GEMINI_API_KEY'];
+      if (apiKey == null || apiKey.isEmpty) {
+        throw ErrorProcesamientoException();
+      }
 
-    // TODO: reemplazar por la llamada real a ML Kit + mapeo de etiquetas.
-    return const WasteItem(
-      nombre: 'Botella PET',
-      categoria: 'Reciclable — Plástico',
-      etiquetaCategoria: 'Reciclable',
-      confianza: 92,
-      descripcion:
-          'Envase plástico fabricado en tereftalato de polietileno, '
-          'comúnmente usado en bebidas.',
-      caracteristicas:
-          'Código de reciclaje 1 (PET). Reciclable en la mayoría de '
-          'centros de acopio.',
-      pasosManejo: [
-        'Enjuaga el envase y retira etiquetas.',
-        'Aplasta el envase para reducir volumen.',
-        'Deposita en el contenedor de reciclables.',
-        'Lleva a un gestor certificado si es en volumen.',
-      ],
-    );
+      final model = GenerativeModel(
+        model: 'gemini-1.5-flash',
+        apiKey: apiKey,
+        generationConfig: GenerationConfig(
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+        ),
+      );
+
+      final imageFile = File(imagePath);
+      final imageBytes = await imageFile.readAsBytes();
+
+      final prompt = '''
+      Eres un experto ambiental colombiano. Analiza la imagen y determina qué residuo es.
+      Clasifícalo ESTRICTAMENTE en una de estas categorías colombianas: PELIGROSO, INDUSTRIAL, RAEE, BIOSANITARIO, RECICLABLE, ORGANICO o ORDINARIO.
+      Devuelve la respuesta en formato JSON puro (sin bloques de código markdown) con esta estructura exacta:
+      {
+        "nombre_comun": "Nombre común del objeto (ej. Botella de vidrio)",
+        "categoria": "La categoría que le asignaste",
+        "descripcion": "Breve impacto ambiental y por qué se clasifica así",
+        "codigo": "N/A",
+        "guia_manejo": [
+          "Paso corto 1 para desecharlo o limpiarlo",
+          "Paso corto 2",
+          "Paso corto 3"
+        ]
+      }
+      ''';
+
+      final content = [
+        Content.multi([
+          TextPart(prompt),
+          DataPart('image/jpeg', imageBytes),
+        ])
+      ];
+
+      final response = await model.generateContent(content);
+      final responseText = response.text;
+      
+      if (responseText == null || responseText.isEmpty) {
+        throw ResiduoNoIdentificadoException();
+      }
+
+      // Por si Gemini incluye bloques de código markdown a pesar de la instrucción
+      var cleanJson = responseText;
+      if (cleanJson.startsWith('```json')) {
+        cleanJson = cleanJson.substring(7);
+        if (cleanJson.endsWith('```')) {
+          cleanJson = cleanJson.substring(0, cleanJson.length - 3);
+        }
+      }
+
+      final jsonMap = jsonDecode(cleanJson);
+      
+      return WasteItem.fromJson(jsonMap, imagePath: imagePath);
+
+    } catch (e) {
+      if (e is ResiduoNoIdentificadoException || e is ErrorProcesamientoException) {
+        rethrow;
+      }
+      // Cualquier otro error de red, parsing o modelo lo tomamos como procesamiento fallido
+      throw ErrorProcesamientoException();
+    }
   }
 }

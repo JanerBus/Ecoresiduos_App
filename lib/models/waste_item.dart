@@ -35,7 +35,7 @@ class WasteItem {
   /// Ruta local de la foto capturada, si hay una disponible.
   final String? imagenPath;
 
-  factory WasteItem.fromJson(Map<String, dynamic> json) {
+  factory WasteItem.fromJson(Map<String, dynamic> json, {String? imagePath}) {
     // Si guia_manejo es un string con saltos de línea, lo separamos. Si no, lo metemos en una lista.
     List<String> extraerPasos(dynamic guia) {
       if (guia == null) return [];
@@ -53,6 +53,7 @@ class WasteItem {
       descripcion: json['descripcion']?.toString() ?? '',
       caracteristicas: json['codigo'] != null ? 'Código: ${json['codigo']}' : 'Sin características',
       pasosManejo: extraerPasos(json['guia_manejo']),
+      imagenPath: imagePath,
     );
   }
 }
