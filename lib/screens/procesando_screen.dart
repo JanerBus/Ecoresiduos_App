@@ -78,7 +78,16 @@ class _ProcesandoScreenState extends State<ProcesandoScreen> {
       _irA(ErrorConexionScreen(onReintentar: () => _irA(
         ProcesandoScreen(imagePath: widget.imagePath, service: service),
       )));
-    } catch (_) {
+    } catch (e) {
+      if (mounted) {
+        String msg = e.toString();
+        if (e is ErrorProcesamientoException && e.message != null) {
+          msg = e.message!;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $msg')),
+        );
+      }
       _irA(ErrorProcesamientoScreen(onReintentar: () => _irA(
         ProcesandoScreen(imagePath: widget.imagePath, service: service),
       )));

@@ -6,10 +6,16 @@ import '../models/waste_item.dart';
 
 /// Se lanza cuando el análisis no logra reconocer el residuo con
 /// suficiente confianza (WF-12).
-class ResiduoNoIdentificadoException implements Exception {}
+class ResiduoNoIdentificadoException implements Exception {
+  final String? message;
+  ResiduoNoIdentificadoException([this.message]);
+}
 
 /// Se lanza cuando ocurre un fallo al procesar la imagen (WF-13).
-class ErrorProcesamientoException implements Exception {}
+class ErrorProcesamientoException implements Exception {
+  final String? message;
+  ErrorProcesamientoException([this.message]);
+}
 
 /// Se lanza cuando no hay conexión disponible para completar el análisis
 /// (WF-14).
@@ -27,10 +33,6 @@ class IdentificacionService {
       final model = GenerativeModel(
         model: 'gemini-1.5-flash',
         apiKey: apiKey,
-        generationConfig: GenerationConfig(
-          responseMimeType: 'application/json',
-          temperature: 0.1,
-        ),
       );
 
       final imageFile = File(imagePath);
@@ -60,23 +62,43 @@ class IdentificacionService {
         ])
       ];
 
-      final response = await model.generateContent(content);
+      GenerateContentResponse? response;
+      try {
+        response = await model.generateContent(content);
+      } catch (e) {
+        if (e.toString().contains('is not found') || e.toString().contains('not supported')) {
+          // Fallback a modelo anterior
+          final fallbackModel = GenerativeModel(
+            model: 'gemini-pro-vision',
+            apiKey: apiKey,
+          );
+          response = await fallbackModel.generateContent(content);
+        } else {
+          rethrow;
+        }
+      }
+
       final responseText = response.text;
       
       if (responseText == null || responseText.isEmpty) {
-        throw ResiduoNoIdentificadoException();
+        throw ResiduoNoIdentificadoException('La respuesta de Gemini está vacía');
       }
 
       // Por si Gemini incluye bloques de código markdown a pesar de la instrucción
-      var cleanJson = responseText;
+      var cleanJson = responseText.trim();
       if (cleanJson.startsWith('```json')) {
         cleanJson = cleanJson.substring(7);
         if (cleanJson.endsWith('```')) {
           cleanJson = cleanJson.substring(0, cleanJson.length - 3);
         }
+      } else if (cleanJson.startsWith('```')) {
+        cleanJson = cleanJson.substring(3);
+        if (cleanJson.endsWith('```')) {
+          cleanJson = cleanJson.substring(0, cleanJson.length - 3);
+        }
       }
 
-      final jsonMap = jsonDecode(cleanJson);
+      final jsonMap = jsonDecode(cleanJson.trim());
       
       return WasteItem.fromJson(jsonMap, imagePath: imagePath);
 
@@ -85,7 +107,7 @@ class IdentificacionService {
         rethrow;
       }
       // Cualquier otro error de red, parsing o modelo lo tomamos como procesamiento fallido
-      throw ErrorProcesamientoException();
+      throw ErrorProcesamientoException(e.toString());
     }
   }
 }
