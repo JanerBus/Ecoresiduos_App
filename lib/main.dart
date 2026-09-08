@@ -9,6 +9,7 @@ import 'screens/identificar_residuo_screen.dart';
 import 'screens/inicio_screen.dart';
 import 'screens/permiso_camara_dialog.dart';
 import 'screens/procesando_screen.dart';
+import 'screens/login_screen.dart';
 import 'theme/eco_theme.dart';
 
 import 'package:permission_handler/permission_handler.dart';
@@ -41,47 +42,73 @@ class EcoResiduosApp extends StatelessWidget {
       title: 'EcoResiduos',
       debugShowCheckedModeBanner: false,
       theme: ecoResiduosTheme,
-      home: Builder(
-        builder: (context) => InicioScreen(
-          onAbrirCamara: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => IdentificarResiduoScreen(
-                onAbrirCamara: () => _iniciarCaptura(context),
-              ),
-            ),
-          ),
-          onBuscarResiduo: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const BuscarResiduoScreen(),
-            ),
-          ),
-          onGuiaDeManejo: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const GuiaManejoGeneralScreen(),
-            ),
-          ),
-          onGestoresCertificados: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const GestoresAsociadosScreen(),
-            ),
-          ),
-          onAutoridadesAmbientales: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const AutoridadesAmbientalesScreen(),
-            ),
+      home: const AuthGate(),
+    );
+  }
+}
+
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _user = Supabase.instance.client.auth.currentUser;
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      if (mounted) {
+        setState(() {
+          _user = data.session?.user;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_user == null) {
+      return const LoginScreen();
+    }
+
+    return InicioScreen(
+      onAbrirCamara: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IdentificarResiduoScreen(
+            onAbrirCamara: () => _iniciarCaptura(context),
           ),
         ),
       ),
-      // A medida que agreguemos pantallas (WF-15, WF-16...), regístralas
-      // aquí como rutas con nombre, por ejemplo:
-      // routes: {
-      //   '/buscar': (_) => const BuscarResiduoScreen(),
-      // },
+      onBuscarResiduo: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const BuscarResiduoScreen(),
+        ),
+      ),
+      onGuiaDeManejo: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const GuiaManejoGeneralScreen(),
+        ),
+      ),
+      onGestoresCertificados: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const GestoresAsociadosScreen(),
+        ),
+      ),
+      onAutoridadesAmbientales: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const AutoridadesAmbientalesScreen(),
+        ),
+      ),
     );
   }
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../theme/eco_colors.dart';
+import 'historial_screen.dart';
 
 /// WF-01 — Inicio
 ///
@@ -55,6 +57,20 @@ class InicioScreen extends StatelessWidget {
                   _IdentificarResiduoCard(onAbrirCamara: onAbrirCamara),
                   const SizedBox(height: 16),
                   _AccionItem(
+                    icon: Icons.history_rounded,
+                    title: 'Mi Historial',
+                    subtitle: 'Tus residuos identificados',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const HistorialScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _AccionItem(
                     icon: Icons.search_rounded,
                     title: 'Buscar residuo',
                     subtitle: 'Consulta por nombre o categoría',
@@ -80,6 +96,19 @@ class InicioScreen extends StatelessWidget {
                     title: 'Autoridades ambientales',
                     subtitle: 'Contactos oficiales',
                     onTap: onAutoridadesAmbientales,
+                  ),
+                  const SizedBox(height: 32),
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        await Supabase.instance.client.auth.signOut();
+                      },
+                      icon: const Icon(Icons.logout_rounded, color: EcoColors.error),
+                      label: const Text(
+                        'Cerrar Sesión',
+                        style: TextStyle(color: EcoColors.error, fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
                 ],
               ),

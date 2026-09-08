@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/waste_item.dart';
 import '../services/identificacion_service.dart';
+import '../services/historial_service.dart';
 import '../theme/eco_colors.dart';
 import 'error_conexion_screen.dart';
 import 'error_procesamiento_screen.dart';
@@ -47,6 +48,10 @@ class _ProcesandoScreenState extends State<ProcesandoScreen> {
       final WasteItem resultado = await service.identificar(
         imagePath: widget.imagePath,
       );
+      
+      // Guardar el escaneo en el historial (en segundo plano)
+      HistorialService.guardarEscaneoEnSegundoPlano(resultado, widget.imagePath);
+
       _irA(
         ResultadoScreen(
           item: resultado,
