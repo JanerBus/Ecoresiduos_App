@@ -10,8 +10,8 @@ class ResiduoNoIdentificadoScreen extends StatelessWidget {
     this.onCancelar,
   });
 
-  final VoidCallback? onReintentar;
-  final VoidCallback? onCancelar;
+  final void Function(BuildContext)? onReintentar;
+  final void Function(BuildContext)? onCancelar;
 
   @override
   Widget build(BuildContext context) {

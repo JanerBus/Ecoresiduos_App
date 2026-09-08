@@ -55,19 +55,23 @@ class _ProcesandoScreenState extends State<ProcesandoScreen> {
       _irA(
         ResultadoScreen(
           item: resultado,
-          onReintentar: () => _irA(
-            ProcesandoScreen(imagePath: widget.imagePath, service: service),
-          ),
-          onVerInformacion: () => Navigator.push(
-            context,
+          onReintentar: (resultContext) {
+            Navigator.pushReplacement(
+              resultContext,
+              MaterialPageRoute(
+                builder: (_) => ProcesandoScreen(imagePath: widget.imagePath, service: service),
+              ),
+            );
+          },
+          onVerInformacion: (resultContext) => Navigator.push(
+            resultContext,
             MaterialPageRoute(
-              builder: (context) => InformacionResiduoScreen(
+              builder: (ctx) => InformacionResiduoScreen(
                 item: resultado,
                 onVerManejo: () => Navigator.push(
-                  context,
+                  ctx,
                   MaterialPageRoute(
-                    builder: (_) =>
-                        ManejoResiduoScreen(pasos: resultado.pasosManejo),
+                    builder: (_) => ManejoResiduoScreen(pasos: resultado.pasosManejo),
                   ),
                 ),
               ),
@@ -76,13 +80,23 @@ class _ProcesandoScreenState extends State<ProcesandoScreen> {
         ),
       );
     } on ResiduoNoIdentificadoException {
-      _irA(ResiduoNoIdentificadoScreen(onReintentar: () => _irA(
-        ProcesandoScreen(imagePath: widget.imagePath, service: service),
-      )));
+      _irA(ResiduoNoIdentificadoScreen(onReintentar: (resultContext) {
+        Navigator.pushReplacement(
+          resultContext,
+          MaterialPageRoute(
+            builder: (_) => ProcesandoScreen(imagePath: widget.imagePath, service: service),
+          ),
+        );
+      }));
     } on SinConexionException {
-      _irA(ErrorConexionScreen(onReintentar: () => _irA(
-        ProcesandoScreen(imagePath: widget.imagePath, service: service),
-      )));
+      _irA(ErrorConexionScreen(onReintentar: (resultContext) {
+        Navigator.pushReplacement(
+          resultContext,
+          MaterialPageRoute(
+            builder: (_) => ProcesandoScreen(imagePath: widget.imagePath, service: service),
+          ),
+        );
+      }));
     } catch (e) {
       if (mounted) {
         String msg = e.toString();
@@ -93,9 +107,14 @@ class _ProcesandoScreenState extends State<ProcesandoScreen> {
           SnackBar(content: Text('Error: $msg')),
         );
       }
-      _irA(ErrorProcesamientoScreen(onReintentar: () => _irA(
-        ProcesandoScreen(imagePath: widget.imagePath, service: service),
-      )));
+      _irA(ErrorProcesamientoScreen(onReintentar: (resultContext) {
+        Navigator.pushReplacement(
+          resultContext,
+          MaterialPageRoute(
+            builder: (_) => ProcesandoScreen(imagePath: widget.imagePath, service: service),
+          ),
+        );
+      }));
     }
   }
 

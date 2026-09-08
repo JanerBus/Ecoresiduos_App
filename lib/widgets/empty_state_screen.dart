@@ -26,9 +26,9 @@ class EmptyStateScreen extends StatelessWidget {
   final String title;
   final String subtitle;
   final String primaryLabel;
-  final VoidCallback? onPrimary;
+  final void Function(BuildContext)? onPrimary;
   final String? secondaryLabel;
-  final VoidCallback? onSecondary;
+  final void Function(BuildContext)? onSecondary;
   final Color iconBackgroundColor;
   final Color iconColor;
 
@@ -73,7 +73,7 @@ class EmptyStateScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 44,
                 child: FilledButton(
-                  onPressed: onPrimary,
+                  onPressed: onPrimary == null ? null : () => onPrimary!(context),
                   style: FilledButton.styleFrom(
                     backgroundColor: EcoColors.primary,
                     foregroundColor: EcoColors.onPrimary,
@@ -94,7 +94,7 @@ class EmptyStateScreen extends StatelessWidget {
                   height: 44,
                   child: TextButton(
                     onPressed:
-                        onSecondary ?? () => Navigator.maybePop(context),
+                        onSecondary != null ? () => onSecondary!(context) : () => Navigator.maybePop(context),
                     style: TextButton.styleFrom(
                       foregroundColor: EcoColors.primary,
                       shape: RoundedRectangleBorder(

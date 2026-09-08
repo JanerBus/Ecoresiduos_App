@@ -15,8 +15,8 @@ class ResultadoScreen extends StatelessWidget {
   });
 
   final WasteItem item;
-  final VoidCallback? onVerInformacion;
-  final VoidCallback? onReintentar;
+  final void Function(BuildContext)? onVerInformacion;
+  final void Function(BuildContext)? onReintentar;
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +77,7 @@ class ResultadoScreen extends StatelessWidget {
                       width: double.infinity,
                       height: 44,
                       child: FilledButton(
-                        onPressed: onVerInformacion,
+                        onPressed: onVerInformacion == null ? null : () => onVerInformacion!(context),
                         style: FilledButton.styleFrom(
                           backgroundColor: EcoColors.primary,
                           foregroundColor: EcoColors.onPrimary,
@@ -96,7 +96,7 @@ class ResultadoScreen extends StatelessWidget {
                       width: double.infinity,
                       height: 44,
                       child: OutlinedButton(
-                        onPressed: onReintentar,
+                        onPressed: onReintentar == null ? null : () => onReintentar!(context),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: EcoColors.primary,
                           side: const BorderSide(
