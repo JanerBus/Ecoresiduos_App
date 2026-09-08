@@ -11,76 +11,55 @@ class RegistroScreen extends StatefulWidget {
 }
 
 class _RegistroScreenState extends State<RegistroScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nombreController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   String? _errorMessage;
 
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
   Future<void> _registrar() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
+      final nombre = _nombreController.text.trim();
       final email = _emailController.text.trim();
       final password = _passwordController.text;
-      final confirmPassword = _confirmPasswordController.text;
 
-      if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-        setState(() {
-          _errorMessage = 'Por favor, completa todos los campos.';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      if (password != confirmPassword) {
-        setState(() {
-          _errorMessage = 'Las contraseñas no coinciden.';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      if (password.length < 6) {
-        setState(() {
-          _errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
-          _isLoading = false;
-        });
-        return;
-      }
-
+      // Supabase signUp acepta data para almacenar en user_metadata (ej. nombre)
       await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,
+        data: {'full_name': nombre},
       );
 
-      // Muestra un mensaje de éxito o navega directo (en Supabase, si requiere confirmación de email, el usuario se crea igual)
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Registro exitoso. Iniciando sesión...'),
+            content: Text('Registro exitoso. ¡Bienvenido a EcoResiduos!'),
             backgroundColor: EcoColors.primary,
           ),
         );
-        // Supabase inicia sesión automáticamente tras el signUp si no requiere confirmación obligatoria.
-        // Asumiremos que el auth.onAuthStateChange en main lo mandará a Inicio, 
-        // pero por si acaso, lo mandamos desde aquí:
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (_) => InicioScreen(
-              onAbrirCamara: () {}, // Se inyectará desde main.dart luego
-              onBuscarResiduo: () {},
-              onGuiaDeManejo: () {},
-              onGestoresCertificados: () {},
-              onAutoridadesAmbientales: () {},
-            ),
-          ),
-          (route) => false,
-        );
+        // Supabase inicia sesión tras el signUp si no requiere confirmación de email obligatoria
+        Navigator.pop(context); // Regresa al Login o deja que AuthGate lo envíe al Inicio
       }
     } on AuthException catch (error) {
       setState(() => _errorMessage = error.message);
@@ -91,6 +70,50 @@ class _RegistroScreenState extends State<RegistroScreen> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  Widget _crearTextFormField({
+    required TextEditingController controller,
+    required String labelText,
+    required String hintText,
+    required IconData prefixIcon,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+    TextInputAction textInputAction = TextInputAction.next,
+    String? Function(String?)? validator,
+    Widget? suffixIcon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        prefixIcon: Icon(prefixIcon),
+        suffixIcon: suffixIcon,
+        filled: true,
+        fillColor: EcoColors.surfaceVariant.withOpacity(0.3),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: EcoColors.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: EcoColors.error, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: EcoColors.error, width: 2),
+        ),
+      ),
+    );
   }
 
   @override
@@ -105,108 +128,182 @@ class _RegistroScreenState extends State<RegistroScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Crear Cuenta',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: EcoColors.primary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Únete para guardar tu historial de reciclaje',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: EcoColors.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 48),
-                if (_errorMessage != null)
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: EcoColors.errorContainer,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: EcoColors.onErrorContainer),
+            padding: const EdgeInsets.symmetric(horizontal: 28.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Crea tu Cuenta',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      color: EcoColors.primary,
                     ),
                   ),
-                TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: 'Correo electrónico',
-                    prefixIcon: const Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Únete y empieza a registrar tus acciones\nde reciclaje de forma inteligente.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      height: 1.4,
+                      color: EcoColors.onSurfaceVariant,
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Contraseña',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _confirmPasswordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Confirmar Contraseña',
-                    prefixIcon: const Icon(Icons.lock_reset),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  height: 52,
-                  child: FilledButton(
-                    onPressed: _isLoading ? null : _registrar,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: EcoColors.primary,
-                      shape: RoundedRectangleBorder(
+                  const SizedBox(height: 48),
+
+                  if (_errorMessage != null)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(
+                        color: EcoColors.errorContainer,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: EcoColors.error.withOpacity(0.3)),
                       ),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
-                        : const Text(
-                            'REGISTRARSE',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: EcoColors.error),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(color: EcoColors.onErrorContainer, fontSize: 14),
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+
+                  _crearTextFormField(
+                    controller: _nombreController,
+                    labelText: 'Nombre Completo',
+                    hintText: 'Ej. María Pérez',
+                    prefixIcon: Icons.person_outline_rounded,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Ingresa tu nombre';
+                      }
+                      return null;
+                    },
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+
+                  _crearTextFormField(
+                    controller: _emailController,
+                    labelText: 'Correo electrónico',
+                    hintText: 'ejemplo@correo.com',
+                    prefixIcon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Ingresa tu correo';
+                      }
+                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                        return 'Ingresa un correo válido';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  _crearTextFormField(
+                    controller: _passwordController,
+                    labelText: 'Contraseña',
+                    hintText: 'Mínimo 6 caracteres',
+                    prefixIcon: Icons.lock_outline_rounded,
+                    obscureText: _obscurePassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        color: EcoColors.onSurfaceVariant,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Ingresa una contraseña';
+                      }
+                      if (value.length < 6) {
+                        return 'La contraseña debe tener al menos 6 caracteres';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  _crearTextFormField(
+                    controller: _confirmPasswordController,
+                    labelText: 'Confirmar Contraseña',
+                    hintText: 'Repite tu contraseña',
+                    prefixIcon: Icons.lock_reset_rounded,
+                    obscureText: _obscureConfirmPassword,
+                    textInputAction: TextInputAction.done,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        color: EcoColors.onSurfaceVariant,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Confirma tu contraseña';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Las contraseñas no coinciden';
+                      }
+                      return null;
+                    },
+                  ),
+                  
+                  const SizedBox(height: 40),
+                  SizedBox(
+                    height: 56,
+                    child: FilledButton(
+                      onPressed: _isLoading ? null : _registrar,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: EcoColors.primary,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 3,
+                              ),
+                            )
+                          : const Text(
+                              'CREAR CUENTA',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
         ),

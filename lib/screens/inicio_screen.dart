@@ -13,7 +13,6 @@ import 'historial_screen.dart';
 class InicioScreen extends StatelessWidget {
   const InicioScreen({
     super.key,
-    this.userInitial = 'P',
     this.onAbrirCamara,
     this.onBuscarResiduo,
     this.onGuiaDeManejo,
@@ -21,9 +20,6 @@ class InicioScreen extends StatelessWidget {
     this.onAutoridadesAmbientales,
     this.onPerfil,
   });
-
-  /// Inicial mostrada en el avatar de perfil (esquina superior derecha).
-  final String userInitial;
 
   final VoidCallback? onAbrirCamara;
   final VoidCallback? onBuscarResiduo;
@@ -34,6 +30,11 @@ class InicioScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = Supabase.instance.client.auth.currentUser;
+    final fullName = user?.userMetadata?['full_name'] as String?;
+    final firstName = fullName?.split(' ').first ?? '';
+    final userInitial = firstName.isNotEmpty ? firstName[0].toUpperCase() : 'U';
+
     return Scaffold(
       backgroundColor: EcoColors.background,
       body: SafeArea(
@@ -44,11 +45,13 @@ class InicioScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                 children: [
-                  const Text(
-                    '¿Qué residuo tienes?',
-                    style: TextStyle(
+                  Text(
+                    firstName.isNotEmpty 
+                        ? 'Hola, $firstName 👋\n¿Qué residuo tienes?' 
+                        : '¿Qué residuo tienes?',
+                    style: const TextStyle(
                       fontSize: 24,
-                      height: 32 / 24,
+                      height: 1.3,
                       fontWeight: FontWeight.bold,
                       color: EcoColors.onSurface,
                     ),
