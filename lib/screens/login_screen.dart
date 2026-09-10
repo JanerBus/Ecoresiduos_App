@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme/eco_colors.dart';
-import 'inicio_screen.dart';
 import 'registro_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -76,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: EcoColors.primaryContainer.withOpacity(0.5),
+                      color: EcoColors.primaryContainer.withValues(alpha: 0.5),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -115,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: BoxDecoration(
                         color: EcoColors.errorContainer,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: EcoColors.error.withOpacity(0.3)),
+                        border: Border.all(color: EcoColors.error.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         children: [
@@ -149,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       hintText: 'ejemplo@correo.com',
                       prefixIcon: const Icon(Icons.email_outlined),
                       filled: true,
-                      fillColor: EcoColors.surfaceVariant.withOpacity(0.3),
+                      fillColor: EcoColors.surfaceVariant.withValues(alpha: 0.3),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -192,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                       filled: true,
-                      fillColor: EcoColors.surfaceVariant.withOpacity(0.3),
+                      fillColor: EcoColors.surfaceVariant.withValues(alpha: 0.3),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,

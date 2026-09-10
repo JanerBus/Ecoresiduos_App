@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path/path.dart' as p;
 import '../models/waste_item.dart';
@@ -11,7 +12,7 @@ class HistorialService {
   static Future<void> guardarEscaneoEnSegundoPlano(WasteItem item, String imagePath) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) {
-      print('No hay usuario logueado. Saltando guardado de historial.');
+      debugPrint('No hay usuario logueado. Saltando guardado de historial.');
       return;
     }
 
@@ -23,7 +24,7 @@ class HistorialService {
       // Guardamos la imagen en una carpeta con el ID del usuario
       final storagePath = '$userId/$fileName';
 
-      print('Subiendo imagen a Supabase Storage...');
+      debugPrint('Subiendo imagen a Supabase Storage...');
       await _supabase.storage.from('escaneos_ia').upload(
         storagePath,
         file,
@@ -31,9 +32,9 @@ class HistorialService {
       );
 
       final imageUrl = _supabase.storage.from('escaneos_ia').getPublicUrl(storagePath);
-      print('Imagen subida: $imageUrl');
+      debugPrint('Imagen subida: $imageUrl');
 
-      print('Insertando registro en historial_escaneos_ia...');
+      debugPrint('Insertando registro en historial_escaneos_ia...');
       await _supabase.from('historial_escaneos_ia').insert({
         'usuario_id': userId,
         'nombre_detectado': item.nombre,
@@ -42,9 +43,9 @@ class HistorialService {
         'imagen_path': imageUrl,
       });
 
-      print('Historial guardado exitosamente.');
+      debugPrint('Historial guardado exitosamente.');
     } catch (e) {
-      print('Error grave al guardar el historial: $e');
+      debugPrint('Error grave al guardar el historial: $e');
     }
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import '../theme/eco_colors.dart';
 
 class ShimmerList extends StatelessWidget {
   const ShimmerList({super.key, this.itemCount = 5});
@@ -12,8 +11,8 @@ class ShimmerList extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       itemCount: itemCount,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (_, __) => const ShimmerListItem(),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      itemBuilder: (_, _) => const ShimmerListItem(),
     );
   }
 }

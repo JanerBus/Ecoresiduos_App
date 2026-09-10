@@ -63,7 +63,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: EcoColors.outline.withOpacity(0.3), height: 1),
+          child: Container(color: EcoColors.outline.withValues(alpha: 0.3), height: 1),
         ),
       ),
       body: _isLoading
@@ -73,7 +73,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
               : ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: _historial.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final item = _historial[index];
                     final colorCat = _obtenerColorCategoria(item['categoria_detectada'] ?? '');
@@ -84,7 +84,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -105,7 +105,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
                                   ? Image.network(
                                       item['imagen_path'],
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => _placeholderIcon(),
+                                      errorBuilder: (_, _, _) => _placeholderIcon(),
                                     )
                                   : _placeholderIcon(),
                             ),
@@ -130,7 +130,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: colorCat.withOpacity(0.1),
+                                    color: colorCat.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(

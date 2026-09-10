@@ -28,8 +28,10 @@ class DirectorioService {
           if (permission == LocationPermission.whileInUse || 
               permission == LocationPermission.always) {
             userPos = await Geolocator.getCurrentPosition(
-              desiredAccuracy: LocationAccuracy.high,
-              timeLimit: const Duration(seconds: 5),
+              locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.high,
+                timeLimit: Duration(seconds: 5),
+              ),
             );
           }
         }

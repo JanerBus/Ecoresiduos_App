@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme/eco_colors.dart';
-import 'inicio_screen.dart';
 
 class RegistroScreen extends StatefulWidget {
   const RegistroScreen({super.key});
@@ -95,7 +94,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
         prefixIcon: Icon(prefixIcon),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: EcoColors.surfaceVariant.withOpacity(0.3),
+        fillColor: EcoColors.surfaceVariant.withValues(alpha: 0.3),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
@@ -164,7 +163,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
                       decoration: BoxDecoration(
                         color: EcoColors.errorContainer,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: EcoColors.error.withOpacity(0.3)),
+                        border: Border.all(color: EcoColors.error.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         children: [

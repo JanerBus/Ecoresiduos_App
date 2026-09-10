@@ -29,7 +29,7 @@ class BusquedaService {
         (c) => c.toLowerCase() == queryClean.toLowerCase()
       );
 
-      late final response;
+      late final dynamic response;
       if (esCategoria) {
         final queryCat = categoriasValidas.firstWhere(
           (c) => c.toLowerCase() == queryClean.toLowerCase()

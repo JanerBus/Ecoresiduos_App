@@ -64,10 +64,10 @@ class InformacionResiduoScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: colorCategoria.withOpacity(0.1),
+                        color: colorCategoria.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(
-                          color: colorCategoria.withOpacity(0.5),
+                          color: colorCategoria.withValues(alpha: 0.5),
                           width: 1.5,
                         ),
                       ),
@@ -114,12 +114,12 @@ class InformacionResiduoScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
+                            color: Colors.black.withValues(alpha: 0.03),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
                         ],
-                        border: Border.all(color: EcoColors.outlineVariant.withOpacity(0.5)),
+                        border: Border.all(color: EcoColors.outlineVariant.withValues(alpha: 0.5)),
                       ),
                       child: Text(
                         item.descripcion,
@@ -153,7 +153,7 @@ class InformacionResiduoScreen extends StatelessWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: EcoColors.surfaceVariant.withOpacity(0.3),
+                          color: EcoColors.surfaceVariant.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: EcoColors.outlineVariant),
                         ),
@@ -220,7 +220,7 @@ class _Header extends StatelessWidget {
         color: EcoColors.background,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -264,7 +264,7 @@ class _FotoResiduo extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),

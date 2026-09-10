@@ -13,8 +13,8 @@ class PermisoRechazadoScreen extends StatelessWidget {
     this.onCancelar,
   });
 
-  final VoidCallback? onAbrirConfiguracion;
-  final VoidCallback? onCancelar;
+  final void Function(BuildContext)? onAbrirConfiguracion;
+  final void Function(BuildContext)? onCancelar;
 
   @override
   Widget build(BuildContext context) {
