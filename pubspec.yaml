@@ -70,6 +70,8 @@ flutter:
 
   assets:
     - .env
+    - assets/models/ecoresiduos_model.tflite
+    - assets/models/labels.txt
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
